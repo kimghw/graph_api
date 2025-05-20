@@ -52,8 +52,13 @@ class Config:
     except:
         _extracted_port = None
 
-    # AUTH_PORT를 설정하는 로직: URI에서 추출한 포트 > 환경변수 > 기본값(5000)
+    # AUTH_PORT와 API_PORT를 설정하는 로직
+    # AUTH_PORT: URI에서 추출한 포트 > 환경변수 > 기본값(5000)
     AUTH_PORT = int(os.environ.get("AUTH_PORT", str(_extracted_port or 5000)))
+    
+    # API_PORT: API 서버가 사용할 포트 (기본값 5001, AUTH_PORT + 1)
+    API_PORT = int(os.environ.get("API_PORT", str(AUTH_PORT + 1)))
+    
     DEFAULT_AUTH_METHOD = os.environ.get("DEFAULT_AUTH_METHOD", "interactive")
     
     # 권한 범위

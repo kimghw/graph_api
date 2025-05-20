@@ -43,6 +43,11 @@
 - [x] Graph API CLI 모듈 (graphapi_cli.py) 구현
 - [x] 이메일 CLI 모듈 (email_cli.py) 구현
 
+#### 8. API 서버
+- [x] FastAPI 기반 API 서버 구현
+- [x] 인증 API 라우터 (auth.py) 구현
+- [x] API 서버 시작 명령어 CLI 추가
+
 ### 진행 중인 작업
 
 #### 1. 테스트 코드

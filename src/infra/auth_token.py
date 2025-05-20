@@ -290,6 +290,7 @@ class AuthTokenManager:
             # 리디렉션 URI의 포트 추출
             parsed_uri = urlparse(self.redirect_uri)
             port = parsed_uri.port or Config.AUTH_PORT  # 설정에서 포트 가져오기
+            logger.debug(f"인증 콜백 서버에 포트 {port} 사용")
             
             # 인증 코드를 수신할 로컬 서버 시작
             server = http.server.HTTPServer(('127.0.0.1', port), CallbackHandler)

@@ -10,6 +10,7 @@ from src.utils.logging_config import LoggerFactory
 from src.utils.exceptions import BaseError
 from src.cli.graphapi_cli import graphapi
 from src.cli.email_cli import email
+from src.infra.config import Config
 
 
 # 로거 설정
@@ -25,6 +26,14 @@ def cli():
 # 하위 명령어 그룹 등록
 cli.add_command(graphapi)
 cli.add_command(email)
+
+
+@cli.command()
+def api():
+    """API 서버를 시작합니다."""
+    click.echo(f"API 서버를 시작합니다. 포트: {Config.API_PORT}")
+    from src.api.app import start
+    start()
 
 
 @cli.command()

@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.utils.logging_config import LoggerFactory
 from src.infra.config import Config
 from src.api.auth import router as auth_router
+from src.api.email import router as email_router
 
 # 로거 설정
 logger = LoggerFactory.get_logger(__name__)
@@ -32,6 +33,7 @@ app.add_middleware(
 
 # 라우터 등록
 app.include_router(auth_router)
+app.include_router(email_router)
 
 
 @app.get("/")

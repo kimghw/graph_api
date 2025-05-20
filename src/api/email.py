@@ -9,6 +9,7 @@ from typing import List, Optional, Union
 from datetime import datetime
 
 from src.services.email_service import EmailService
+from src.services.auth_service import AuthService
 from src.schemas.email import EmailDto
 from src.utils.exceptions import EmailProcessingError, GraphApiError
 
@@ -21,11 +22,27 @@ router = APIRouter(
 
 # 서비스 인스턴스
 email_service = EmailService()
+auth_service = AuthService()
 
 
 def get_email_service():
     """의존성 주입을 위한 EmailService 인스턴스 제공"""
     return email_service
+
+
+def get_auth_service():
+    """의존성 주입을 위한 AuthService 인스턴스 제공"""
+    return auth_service
+
+
+def require_authentication(auth_service: AuthService = Depends(get_auth_service)):
+    """인증이 필요한 엔드포인트에 사용할 의존성"""
+    if not auth_service.is_authenticated():
+        raise HTTPException(
+            status_code=401, 
+            detail="이 엔드포인트에 접근하려면 먼저 인증이 필요합니다. /auth/interactive 엔드포인트를 통해 인증하세요."
+        )
+    return auth_service
 
 
 @router.get("/inbox", response_model=List[EmailDto])
@@ -36,7 +53,8 @@ async def get_inbox_emails(
     limit: int = Query(1000, description="최대 결과 수"),
     filter_senders: bool = Query(True, description="발신자 필터링 적용 여부"),
     convert_html_to_text: bool = Query(True, description="HTML 본문을 텍스트로 변환할지 여부"),
-    email_service: EmailService = Depends(get_email_service)
+    email_service: EmailService = Depends(get_email_service),
+    auth: AuthService = Depends(require_authentication)
 ) -> List[EmailDto]:
     """수신함 이메일을 본문과 함께 조회합니다.
     

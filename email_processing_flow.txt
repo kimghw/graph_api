@@ -1,0 +1,65 @@
+# Microsoft Graph API 이메일 처리 흐름도
+
+1. 원본 데이터 (Graph API 응답)
+   ┌─────────────────────────────────────────────┐
+   │ {                                           │
+   │   "id": "AAMkADU2...",                      │
+   │   "subject": "[kimghw/label-studio] ...",    │
+   │   "from": {                                 │
+   │     "emailAddress": {                       │
+   │       "name": "kimghw",                     │
+   │       "address": "notifications@github.com" │
+   │     }                                       │
+   │   },                                        │
+   │   "body": {                                 │
+   │     "contentType": "html",                  │
+   │     "content": "<html>...</html>"           │
+   │   },                                        │
+   │   "receivedDateTime": "2025-05-20T02:10:00Z"│
+   │   ...                                       │
+   │ }                                           │
+   └─────────────────────────────────────────────┘
+                        ↓
+2. 데이터 변환 및 처리 (EmailDto.from_dict)
+   ┌─────────────────────────────────────────────┐
+   │ EmailDto 객체 변환 과정:                     │
+   │ - HTML → 텍스트 변환                        │
+   │ - 날짜 문자열 → datetime 객체               │
+   │ - 발신자/수신자 정보 구조화                 │
+   │ - 첨부 파일 정보 처리                       │
+   │ - 필터링 적용 (옵션)                        │
+   └─────────────────────────────────────────────┘
+                        ↓
+3. 최종 처리된 데이터 (JSON 출력용)
+   ┌─────────────────────────────────────────────┐
+   │ {                                           │
+   │   "id": "AAMkADU2...",                      │
+   │   "subject": "[kimghw/label-studio] ...",   │
+   │   "sender": "kimghw <notifications@github.com>",│
+   │   "date": "2025-05-20T02:10:00+00:00",      │
+   │   "is_read": true,                          │
+   │   "body": "## [kimghw/label-studio] Close sta..."│
+   │ }                                           │
+   └─────────────────────────────────────────────┘
+
+
+# 주요 클래스/함수 역할
+
+* GraphApiGateway._make_request(): Microsoft Graph API에 HTTP 요청을 수행
+* EmailDto.from_dict(): API 응답을 EmailDto 객체로 변환 (데이터 가공)
+* EmailService.get_inbox_emails(): 위 과정을 포함해 이메일 조회 기능 제공
+
+# 주요 데이터 전처리 작업
+
+1. HTML 본문 → 마크다운 텍스트 변환: 
+   <html><body><p>Hello</p></body></html> → Hello
+
+2. ISO 8601 날짜 형식 → Python datetime:
+   "2025-05-20T02:10:00Z" → datetime(2025, 5, 20, 2, 10, 0)
+
+3. 중첩된 발신자 정보 → 단순화:
+   {"from": {"emailAddress": {"name": "kimghw", "address": "notifications@github.com"}}}
+   → "kimghw <notifications@github.com>"
+
+4. 본문 내용을 필요에 따라 일정 길이로 자르기:
+   {...본문 전체...} → "첫 200자..."
